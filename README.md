@@ -55,6 +55,12 @@ A failure is meaningful only when consistent across structurally similar samples
 
 Three components, jointly instantiating the conceptual framework.
 
+<p align="center">
+  <img src="figures/analysis_toolkit_overview.png" alt="Overview of the analysis toolkit" width="720"/>
+</p>
+
+*Figure 1. Overview of the analysis toolkit. The toolkit translates noisy benchmark-level observations into structured capability diagnoses, and these diagnoses, in turn, into candidate data-intervention hypotheses that can be validated experimentally.*
+
 ### 3.1 Evaluation Sample Taxonomy
 
 Decomposes each benchmark sample along the four dimensions above. Instantiated on **16 widely-used pretraining benchmarks**: PIQA, HellaSwag, MMLU, TriviaQA, RACE, DROP, MMLU-Pro, BBH, C-Eval, CMMLU, AGIEval-CN, MBPP, HumanEval, GSM8K, MathQA, MATH (Minerva).
@@ -136,6 +142,13 @@ This is the operational form taken by the data–evaluation closed loop once the
 - Regression broad across every output-constraint value, but largest on the closed-set / MCQ subsets (50.30 → 25.86, 47.48 → 21.18) — too large to attribute to increased reasoning difficulty on items with a small finite answer set.
 
 **Prediction-level audit (n = 5545).**
+
+<p align="center">
+  <img src="figures/resp_length_before_1.png" alt="Length distribution anomaly on BBH" width="720"/>
+</p>
+
+*Figure 2. Character-length quantiles of `resps` (left) and `filtered_resps` (right) on the audited BBH subset, for warm-start and base. The `filtered_resps` panel exposes the anomaly directly: the base checkpoint's filtered median jumps from 3 → 96 chars and its 90th percentile reaches 1931 chars — direct evidence of an output-formatting irregularity, not a content-level reasoning failure.*
+
 | Metric | Warm-start | Base |
 | --- | --- | --- |
 | Gold answer appears as prefix of `filtered_resps` | 50.39% | **69.25%** |
@@ -162,6 +175,12 @@ The base checkpoint **reaches the correct answer more often**, but trails off in
 - Gold-prefix acceptance: **37.34% → 99.69%** (matching warm-start 99.82%).
 - The intervention **does not change how often the correct answer is reached** (prefix rate 69.25% → 69.31%) — it suppresses unwanted continuations.
 
+<p align="center">
+  <img src="figures/resp_length_after_1.png" alt="Length distribution restored after EOS fix" width="720"/>
+</p>
+
+*Figure 3. Character-length quantiles after restoring `<EOS>` supervision (`exp`, green). Both `resps` and `filtered_resps` distributions snap back to the warm-start profile at every quantile, confirming the fix affects generation length broadly rather than only at the answer-extraction point.*
+
 **Lesson.** What looked like a reasoning regression was a termination-supervision gap. Output-constraint analysis is a primary diagnostic axis — conflating expression / scoring failures with capability failures sends data interventions at the wrong target.
 
 ---
@@ -186,6 +205,12 @@ arithmetic_computation (49.14% in isolation):
 ```
 
 Same pattern across `equation_formulation`, `multi_hop_composition`, `symbolic_transformation`: arithmetic-related companions are nearly neutral, while `constraint_tracking` and `boundary_case_reasoning` are systematic difficulty amplifiers.
+
+<p align="center">
+  <img src="figures/arithmetic_computation_1.png" alt="Pairwise composition effect for arithmetic_computation" width="640"/>
+</p>
+
+*Figure 10. Pairwise composition effect Δ_pair(u; o_i) for anchor operation `arithmetic_computation` (single-op accuracy 49.14%). Arithmetic in isolation is not the principal source of difficulty; its reliability collapses by 30–66% once composed with `counting`, `boundary_case_reasoning`, `constraint_tracking`, or `physical_state_simulation`. Per-anchor figures for all major mathematical operators are reported in Appendix A.1 (Figures 11–19).*
 
 **Level 3 — Non-additive composition effect** C(u; o_i, o_j) = r(u, o_i, o_j) − [r(u, o_i) + r(u, o_j)]. Triples whose difficulty exceeds the sum of their pairwise effects. Strongest super-additive degradation involves `counting`, `compare_or_rank`, and `symbolic_transformation`, particularly when combined with `equation_formulation`.
 
@@ -222,8 +247,22 @@ where ω(F) = log(1 + n(F)) · √(n(F) / (n(F) + κ)) is a support-reliability 
 General-domain benchmarks essentially unchanged.
 
 **Slice-level attribution (controlled comparison, base vs. exp).** Top-10 retained operation triples:
-- Few-shot protocol on diagnostic set: mean Δ_acc = +0.18pt, 8/10 improve.
-- **Pass@128 protocol on MATH500: mean Δ_acc = +4.47pt, 10/10 improve.**
+
+*Few-shot protocol on diagnostic set: mean Δ_acc = +0.18pt, 8/10 improve.*
+
+<p align="center">
+  <img src="figures/acc_tri.png" alt="Operation-triple slice gains under few-shot protocol" width="720"/>
+</p>
+
+*Figure 6. Per-slice accuracy change Δ_acc = acc_exp − acc_base over the top-10 highest-scoring operation triples, under the few-shot benchmark protocol on the diagnostic set (~9,300 samples). Signal is positive but modest; two `constraint_tracking × equation_formulation`-bearing triples regress.*
+
+***Pass@128 protocol on MATH500: mean Δ_acc = +4.47pt, 10/10 improve.***
+
+<p align="center">
+  <img src="figures/acc_tri_passk.png" alt="Operation-triple slice gains under Pass@128 protocol" width="720"/>
+</p>
+
+*Figure 9. Per-slice accuracy change over the same top-10 operation triples, evaluated under the Pass@128 protocol on MATH500. **All 10 slices improve**, with individual gains in the +1.5pt to +6.5pt range — roughly an order of magnitude above the few-shot signal, and the cleanest available evidence that the gains track the diagnostic-to-data link encoded in `Weak(F)` rather than reflecting a generic continued-training effect. The two `constraint_tracking`-bearing triples that regressed under few-shot move into substantially positive territory (+1.47pt and +5.00pt) under Pass@K.*
 
 The Pass@K signal is roughly an order of magnitude larger than the few-shot signal and uniformly positive on the targeted slices. This is the **expected signature of an intervention that broadens trajectory coverage rather than sharpening an already-correct mode** — consistent with the widening exp–base gap as K grows on AIME (Pass@1 0.73 vs Pass@128 26.67 on AIME2025).
 
@@ -262,7 +301,14 @@ The methodology is intended to **make existing data-curation pipelines more audi
 
 ```
 .
-├── paper/                          # arXiv preprint and figures
+├── paper/                          # arXiv preprint
+├── figures/                        # figures referenced in this README
+│   ├── figure1.png                 # toolkit overview
+│   ├── figure2.png                 # BBH length anomaly (Case 1)
+│   ├── figure3.png                 # BBH length restored after EOS fix
+│   ├── figure6.png                 # triple-level slice gains, few-shot
+│   ├── figure9.png                 # triple-level slice gains, Pass@128
+│   └── figure10.png                # pairwise composition effect, arithmetic anchor
 ├── taxonomies/
 │   ├── evaluation_sample/          # 4-dim labels for 16 benchmarks
 │   └── non_instruction_data/       # 4-dim labels for corpus segments
@@ -296,4 +342,4 @@ The methodology is intended to **make existing data-curation pipelines more audi
 
 ## Authors
 
-Zhixuan Li\*, Jiangan Yuan\*, Han Xu  *\*Co-first authors with equal contributions.*
+Zhixuan Li\*, Jiangan Yuan\*, Han Xu (Baidu Inc.)  *\*Co-first authors with equal contributions.*
