@@ -297,38 +297,6 @@ The methodology is intended to **make existing data-curation pipelines more audi
 
 ---
 
-## Repository Layout (planned)
-
-```
-.
-├── paper/                          # arXiv preprint
-├── figures/                        # figures referenced in this README
-│   ├── figure1.png                 # toolkit overview
-│   ├── figure2.png                 # BBH length anomaly (Case 1)
-│   ├── figure3.png                 # BBH length restored after EOS fix
-│   ├── figure6.png                 # triple-level slice gains, few-shot
-│   ├── figure9.png                 # triple-level slice gains, Pass@128
-│   └── figure10.png                # pairwise composition effect, arithmetic anchor
-├── taxonomies/
-│   ├── evaluation_sample/          # 4-dim labels for 16 benchmarks
-│   └── non_instruction_data/       # 4-dim labels for corpus segments
-├── annotation/
-│   ├── prompts/                    # human–LLM co-designed prompts
-│   └── pipelines/                  # large-scale annotation infra
-├── analysis/
-│   ├── slice_diagnostics/          # weak-slice discovery
-│   ├── pairwise_effects/           # Δ_pair analysis
-│   └── composition_effects/        # C(·) non-additive analysis
-├── sampling/
-│   └── es_reservoir/               # Efraimidis–Spirakis weighted sampling
-│                                   # with duplication cap + coverage reserve
-└── case_studies/
-    ├── case1_eos_supervision/
-    └── case2_targeted_math/
-```
-
----
-
 ## Citation
 
 ```bibtex
