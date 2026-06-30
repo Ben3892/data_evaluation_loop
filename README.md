@@ -2,6 +2,8 @@
 
 > A framework that turns noisy benchmark observations into actionable training-data interventions through structured capability diagnoses, with two end-to-end case studies on a continued-pretraining pipeline.
 
+[📄 paper（PDF）](./Data_and_Evaluation_Closed-Loop_for_Model_Capability_Enhancement.pdf) · [arXiv](https://arxiv.org/abs/2606.28471) · [citation](#citation)
+
 [![Paper](https://img.shields.io/badge/arXiv-preprint-b31b1b.svg)](#) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](#)
 
 ---
