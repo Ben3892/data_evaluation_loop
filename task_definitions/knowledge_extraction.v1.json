@@ -1,0 +1,32 @@
+{
+  "name": "knowledge_extraction",
+  "version": "v1",
+  "kind": "extractor",
+  "description": "Extract normalized mathematical knowledge points from a source passage.",
+  "system_prompt": "You extract reusable mathematical knowledge points. Do not create questions. Preserve source provenance and return only structured facts supported by the passage.",
+  "user_prompt": "Source ID: {{ source_id }}\nLanguage: {{ language }}\nDomain hint: {{ domain_hint }}\n\nSource passage:\n{{ source_text }}\n\nExtract atomic knowledge points, prerequisites, solving operations, and a difficulty range from 1 to 5.",
+  "output_schema": {
+    "type": "object",
+    "required": ["knowledge_points"],
+    "properties": {
+      "knowledge_points": {
+        "type": "array"
+      }
+    }
+  },
+  "parameters": {
+    "temperature": 0.1
+  },
+  "sampling": {
+    "weight": 1.0,
+    "min_weight": 0.0,
+    "max_weight": 1.0,
+    "max_delta": 1.0
+  },
+  "editable_fields": [
+    "system_prompt",
+    "user_prompt",
+    "parameters"
+  ]
+}
+

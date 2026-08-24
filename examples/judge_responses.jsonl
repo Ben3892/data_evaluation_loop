@@ -1,0 +1,1 @@
+{"decision":"accept","hard_fail":false,"scores":{"correctness":5,"self_containment":5,"clarity":5,"difficulty_match":5},"issues":[],"evidence":["(x-2)(x-3)=0 与参考答案一致"],"suggested_fix":"","confidence":0.98}

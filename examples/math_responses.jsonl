@@ -1,0 +1,1 @@
+{"instruction":"求方程 x²-5x+6=0 的两个根。","response":"方程可分解为 (x-2)(x-3)=0，因此 x=2 或 x=3。","reference_answer":"x=2 或 x=3","knowledge_points":["一元二次方程求根公式"],"solving_operations":["计算判别式","求根"],"difficulty":2,"language":"zh-CN","verification_level":"symbolic"}

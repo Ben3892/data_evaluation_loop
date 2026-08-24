@@ -1,0 +1,35 @@
+{
+  "name": "prompt_optimizer",
+  "version": "v1",
+  "kind": "optimizer",
+  "description": "Propose one atomic prompt-task modification from intrinsic evaluation failures.",
+  "system_prompt": "You propose one atomic, auditable modification to a data task. Use only the provided evaluation report and error examples. Do not change fields outside editable_fields. Return a candidate; never claim it should be auto-promoted.",
+  "user_prompt": "Target definition: {{ target_definition }}\nEditable fields: {{ editable_fields }}\nEvaluation report: {{ evaluation_report }}\nError examples: {{ error_examples }}\n\nPropose one hypothesis-driven modification to system_prompt, user_prompt, or parameters. Include expected effects and risks.",
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "hypothesis",
+      "expected_effects",
+      "risks"
+    ],
+    "properties": {
+      "system_prompt": {"type": "string"},
+      "user_prompt": {"type": "string"},
+      "parameters": {"type": "object"},
+      "hypothesis": {"type": "string"},
+      "expected_effects": {"type": "array"},
+      "risks": {"type": "array"}
+    }
+  },
+  "parameters": {
+    "temperature": 0.3
+  },
+  "sampling": {
+    "weight": 1.0,
+    "min_weight": 0.0,
+    "max_weight": 1.0,
+    "max_delta": 1.0
+  },
+  "editable_fields": []
+}
+

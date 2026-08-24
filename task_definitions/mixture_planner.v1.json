@@ -1,0 +1,30 @@
+{
+  "name": "mixture_planner",
+  "version": "v1",
+  "kind": "planner",
+  "description": "Propose data-task call-budget weights from intrinsic data evaluation.",
+  "system_prompt": "You plan data-generation call budgets from aggregate data-quality evidence. Propose one weight for every generator task and explain each change. Stay inside the provided constraints when possible. Your output is only a proposal; deterministic projection and experiments decide adoption.",
+  "user_prompt": "Current weights: {{ current_weights }}\nConstraints: {{ constraints }}\nEvaluation report: {{ evaluation_report }}\n\nReturn a weights object with exactly the same task names and a rationale object.",
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "weights",
+      "rationale"
+    ],
+    "properties": {
+      "weights": {"type": "object"},
+      "rationale": {"type": "object"}
+    }
+  },
+  "parameters": {
+    "temperature": 0.2
+  },
+  "sampling": {
+    "weight": 1.0,
+    "min_weight": 0.0,
+    "max_weight": 1.0,
+    "max_delta": 1.0
+  },
+  "editable_fields": []
+}
+

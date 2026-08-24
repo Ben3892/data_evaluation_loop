@@ -1,0 +1,1 @@
+{"weights":{"math_knowledge":0.5,"rewrite":0.2,"code_generation":0.3},"rationale":{"math_knowledge":"当前数学拒绝率较高，增加诊断样本","rewrite":"保持基础语言和风格覆盖","code_generation":"维持代码任务覆盖"}}

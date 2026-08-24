@@ -1,0 +1,42 @@
+{
+  "name": "rewrite",
+  "version": "v1",
+  "kind": "generator",
+  "description": "Rewrite an already verified parent while preserving its answer, solution, and executable tests.",
+  "system_prompt": "You rewrite a verified data item. Change only the requested style, diversity dimension, or language. Preserve every mathematical value, constraint, answer, function signature, and testable behavior. Return only the rewritten instruction and transformation metadata.",
+  "user_prompt": "Parent payload: {{ parent_payload }}\nRequested transformations: {{ transformations }}\nTarget language: {{ target_language }}\nTarget style: {{ target_style }}\n\nReturn a rewritten instruction, its language and style, the applied transformations, and a short rewrite summary. Do not return a new answer or solution.",
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "instruction",
+      "language",
+      "style",
+      "transformations",
+      "rewrite_summary"
+    ],
+    "properties": {
+      "instruction": {"type": "string"},
+      "language": {"type": "string"},
+      "style": {"type": "string"},
+      "transformations": {"type": "array"},
+      "rewrite_summary": {"type": "string"}
+    }
+  },
+  "parameters": {
+    "temperature": 0.7,
+    "top_p": 0.9
+  },
+  "sampling": {
+    "weight": 0.25,
+    "min_weight": 0.05,
+    "max_weight": 0.5,
+    "max_delta": 0.1
+  },
+  "editable_fields": [
+    "system_prompt",
+    "user_prompt",
+    "parameters",
+    "sampling.weight"
+  ]
+}
+
