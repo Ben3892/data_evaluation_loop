@@ -1,0 +1,25 @@
+test_bad_first_error_rejected (test_eval_loop.EvaluationLoopTests.test_bad_first_error_rejected) ... ok
+test_duplicate_rejected (test_eval_loop.EvaluationLoopTests.test_duplicate_rejected) ... ok
+test_first_and_primary_are_independent (test_eval_loop.EvaluationLoopTests.test_first_and_primary_are_independent) ... ok
+test_four_transitions_and_question_counts (test_eval_loop.EvaluationLoopTests.test_four_transitions_and_question_counts) ... ok
+test_mismatched_references_rejected (test_eval_loop.EvaluationLoopTests.test_mismatched_references_rejected) ... ok
+test_missing_pair_counted (test_eval_loop.EvaluationLoopTests.test_missing_pair_counted) ... ok
+test_protocols_not_mixed (test_eval_loop.EvaluationLoopTests.test_protocols_not_mixed) ... ok
+test_repeated_attempts_are_separate (test_eval_loop.EvaluationLoopTests.test_repeated_attempts_are_separate) ... ok
+test_schema_rejects_non_boolean (test_eval_loop.EvaluationLoopTests.test_schema_rejects_non_boolean) ... ok
+test_unreviewed_has_no_error_claim (test_eval_loop.EvaluationLoopTests.test_unreviewed_has_no_error_claim) ... ok
+test_infeasible_mixture_bounds_are_rejected (test_optimization.OptimizationTests.test_infeasible_mixture_bounds_are_rejected) ... ok
+test_mixture_planner_projects_weights_to_safety_bounds (test_optimization.OptimizationTests.test_mixture_planner_projects_weights_to_safety_bounds) ... ok
+test_prompt_optimizer_only_creates_a_versioned_candidate (test_optimization.OptimizationTests.test_prompt_optimizer_only_creates_a_versioned_candidate) ... ok
+test_deterministic_failure_short_circuits_model_calls (test_quality_and_evaluation.QualityAndEvaluationTests.test_deterministic_failure_short_circuits_model_calls) ... ok
+test_evaluation_is_grouped_by_independent_task (test_quality_and_evaluation.QualityAndEvaluationTests.test_evaluation_is_grouped_by_independent_task) ... ok
+test_small_model_and_large_judge_both_gate_acceptance (test_quality_and_evaluation.QualityAndEvaluationTests.test_small_model_and_large_judge_both_gate_acceptance) ... ok
+test_code_private_tests_are_not_in_public_candidate (test_tasks.IndependentTaskTests.test_code_private_tests_are_not_in_public_candidate) ... ok
+test_knowledge_extraction_is_independent (test_tasks.IndependentTaskTests.test_knowledge_extraction_is_independent) ... ok
+test_math_generation_uses_requested_knowledge (test_tasks.IndependentTaskTests.test_math_generation_uses_requested_knowledge) ... ok
+test_rewrite_preserves_answer_and_lineage (test_tasks.IndependentTaskTests.test_rewrite_preserves_answer_and_lineage) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.059s
+
+OK

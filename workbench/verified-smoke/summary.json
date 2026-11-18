@@ -1,0 +1,91 @@
+{
+  "records": 8,
+  "per_question": [
+    {
+      "run_id": "base",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q1",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 1,
+      "accuracy": 1.0
+    },
+    {
+      "run_id": "base",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q2",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 1,
+      "accuracy": 1.0
+    },
+    {
+      "run_id": "base",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q3",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    {
+      "run_id": "base",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q4",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    {
+      "run_id": "candidate",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q1",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 1,
+      "accuracy": 1.0
+    },
+    {
+      "run_id": "candidate",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q2",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    {
+      "run_id": "candidate",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q3",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 1,
+      "accuracy": 1.0
+    },
+    {
+      "run_id": "candidate",
+      "task_id": "atomic_exact.v1",
+      "sample_id": "q4",
+      "protocol": "reasoning",
+      "n": 1,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  ],
+  "transitions": {
+    "correct→correct": 1,
+    "correct→incorrect": 1,
+    "incorrect→correct": 1,
+    "incorrect→incorrect": 1
+  },
+  "paired": 4,
+  "unmatched": 0,
+  "first_error_types": {
+    "constraint_missed": 1,
+    "calculation_error": 1,
+    "unsupported_claim": 2
+  },
+  "note": "null error does not establish a correct reasoning process; pairs match task/sample/attempt/protocol"
+}

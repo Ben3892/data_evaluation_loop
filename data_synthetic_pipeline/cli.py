@@ -289,6 +289,8 @@ def build_parser() -> argparse.ArgumentParser:
     mixture_parser.add_argument("--responses")
     mixture_parser.add_argument("--output", required=True)
     mixture_parser.set_defaults(handler=command_optimize_mixture)
+    from .eval_loop import register
+    register(subparsers)
     return parser
 
 

@@ -119,3 +119,14 @@ data_synthetic_pipeline/
     ├── storage.py                    # 公开/私有产物与事件
     └── cli.py                        # 独立任务 CLI
 ~~~
+
+
+## 新增：题级评测最小闭环
+
+```sh
+python -m pip install '.[eval]'
+python -m data_synthetic_pipeline run-loop --input fixtures/eval-smoke.jsonl --baseline base --target candidate --output artifacts/eval-smoke
+python -m unittest discover -s tests -v
+```
+
+新增题级结果 Schema、`first_error` / `primary_error` 标注约束、按题重复作答统计和前后模型正确性转移。8 条离线夹具覆盖四种转移，仅验证接口，不是实际模型效果。详细说明、命令、验收结果和未完成工作见 [实施报告](docs/EVALUATION_LOOP_IMPLEMENTATION_zh.md)。前端工作台源码与启动方式见 [workbench/README.md](workbench/README.md)。

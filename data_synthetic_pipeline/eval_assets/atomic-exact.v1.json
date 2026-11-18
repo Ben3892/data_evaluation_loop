@@ -1,0 +1,1 @@
+{"task_id":"atomic_exact.v1","version":"1.0","scorer":"exact_match","normalization":"strip","input_contract":["run_id","sample_id","attempt_id","model","protocol","answer","reference"],"domains":["factual_recall","instruction_following","math","science"],"scope":"离线接口夹具；不等同于真实 benchmark 或语义 judge"}
