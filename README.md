@@ -6,6 +6,8 @@
 
 [![Paper](https://img.shields.io/badge/arXiv-preprint-b31b1b.svg)](#) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](#)
 
+Run the [offline benchmark diagnosis smoke test](docs/BENCHMARK_ATTRIBUTION_MVP_zh.md) to replay scored attempts, locate step-level errors, and compare matched results. See the [data synthesis quick start](README_zh.md) for the generation and quality pipeline.
+
 ---
 
 ## TL;DR

@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "benchmark_attempt.v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "attempt_id",
+    "run_id",
+    "model",
+    "benchmark",
+    "dataset_revision",
+    "item_id",
+    "protocol_id",
+    "sample_index",
+    "family",
+    "slices",
+    "score",
+    "trace_status",
+    "trace_kind",
+    "trace_hash",
+    "trace_ref",
+    "annotation_source",
+    "annotation_definition_id",
+    "steps",
+    "first_error",
+    "primary_error"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "benchmark_attempt.v1"
+    },
+    "attempt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "benchmark": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "protocol_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sample_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "family": {
+      "enum": [
+        "fact_recall",
+        "instruction_following",
+        "math",
+        "science"
+      ]
+    },
+    "slices": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "score": {
+      "type": "object",
+      "required": [
+        "outcome",
+        "scorer_id",
+        "rubric_results"
+      ],
+      "properties": {
+        "outcome": {
+          "enum": [
+            "correct",
+            "incorrect",
+            "abstain",
+            "unscored"
+          ]
+        },
+        "scorer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rubric_results": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "pass",
+              "fail",
+              "unscored"
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "trace_status": {
+      "enum": [
+        "unavailable",
+        "unannotated",
+        "annotated"
+      ]
+    },
+    "trace_kind": {
+      "enum": [
+        "reasoning_trace",
+        "reasoning_summary",
+        "final_answer",
+        null
+      ]
+    },
+    "trace_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "trace_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "annotation_source": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "method",
+            "annotator_id"
+          ],
+          "properties": {
+            "method": {
+              "enum": [
+                "import",
+                "judge"
+              ]
+            },
+            "annotator_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "request_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "response_hash": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "annotation_definition_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/step"
+      }
+    },
+    "first_error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "index",
+            "code",
+            "evidence",
+            "introduced_here"
+          ],
+          "properties": {
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 1
+            },
+            "introduced_here": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "primary_error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "index",
+            "code",
+            "reason",
+            "rubric_ids",
+            "status"
+          ],
+          "properties": {
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rubric_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "status": {
+              "const": "hypothesis"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": [
+        "index",
+        "action",
+        "quality",
+        "markers",
+        "depends_on",
+        "repairs",
+        "error"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quality": {
+          "enum": [
+            "good",
+            "neutral",
+            "bad",
+            "uncertain"
+          ]
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "repairs": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "code",
+                "evidence",
+                "introduced_here"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidence": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "introduced_here": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

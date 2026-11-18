@@ -1,6 +1,6 @@
 # 数据合成与质量评估闭环（Data-only MVP）
 
-当前实现只闭环数据任务，不修改训练代码，也不根据训练 loss 自动调整训练过程。
+本页介绍数据合成闭环与 benchmark 轨迹归因入口。
 
 闭环对象是版本化的数据任务定义：数学知识点合成、风格/多样性/语言改写、类 KodCode 代码任务生成、确定性检查、小模型打标、大模型 Judge、数据内在评估，以及由大模型提出的 Prompt 或生成任务采样比例候选。
 
@@ -17,6 +17,10 @@
 - `optimize-prompt`：大模型只能修改任务声明的 `editable_fields`，产生新版本候选，不自动覆盖基线。
 - `optimize-mixture`：大模型提出三类生成任务的调用预算比例，再由确定性算法投影到上下界和 `max_delta` 约束内。
 - OpenAI-compatible HTTP 模型客户端和完全离线的 Replay 客户端。
+
+## Benchmark 轨迹归因
+
+使用 `benchmark-run` 导入已判分的 benchmark 轨迹，定位 first-error 与 primary-error。使用 `benchmark-stats` 统计推理动作和能力切片，使用 `benchmark-compare` 验证同题配对结果。见[轨迹归因协议与离线 smoke test](docs/BENCHMARK_ATTRIBUTION_MVP_zh.md)。
 
 ## 快速开始
 

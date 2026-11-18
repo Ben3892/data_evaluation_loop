@@ -1,4 +1,4 @@
-"""Command-line interface for the data-only closed loop."""
+"""Command-line interface for data synthesis and benchmark diagnosis."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Iterable, List, Optional
 
+from .benchmark import compare_attempts, evaluate_attempt, summarize_attempts
 from .evaluation import DataQualityEvaluator
 from .knowledge_extraction import KnowledgeExtractor
 from .llm import LLMClient, OpenAICompatibleClient, ReplayLLMClient
@@ -25,7 +26,7 @@ from .pipeline import IndependentTaskRunner
 from .quality import QualityFilterTask
 from .registry import TaskRegistry
 from .storage import RunStore
-from .utils import atomic_write_json, iter_jsonl, write_jsonl
+from .utils import atomic_write_json, atomic_write_jsonl, iter_jsonl, write_jsonl
 
 DEFAULT_DEFINITIONS = Path(__file__).resolve().parent.parent / "task_definitions"
 
@@ -226,10 +227,50 @@ def command_optimize_mixture(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_benchmark_run(args: argparse.Namespace) -> int:
+    definition = TaskRegistry.from_directory(args.definitions).get(
+        "benchmark_trace_annotation", "v1"
+    )
+    responses = iter_jsonl(args.judge_responses) if args.judge_responses else None
+    client = ReplayLLMClient(responses) if responses is not None else None
+    if args.judge_online:
+        client = _client(None, env_prefix="DSP_BENCHMARK_JUDGE")
+
+    def results():
+        seen = set()
+        for index, row in enumerate(iter_jsonl(args.input), start=1):
+            try:
+                result = evaluate_attempt(row, definition=definition, client=client)
+                attempt_id = result["attempt_id"]
+                if attempt_id in seen:
+                    raise ValueError("duplicate attempt_id")
+                seen.add(attempt_id)
+            except (KeyError, ValueError, RuntimeError) as exc:
+                raise ValueError(f"benchmark input record {index}: {exc}") from exc
+            yield result
+        if responses is not None and next(responses, None) is not None:
+            raise ValueError("unused judge replay responses")
+
+    atomic_write_jsonl(args.output, results())
+    return 0
+
+
+def command_benchmark_stats(args: argparse.Namespace) -> int:
+    report = summarize_attempts(iter_jsonl(args.results), k=args.k, slice_key=args.slice)
+    atomic_write_json(args.output, report)
+    return 0
+
+
+def command_benchmark_compare(args: argparse.Namespace) -> int:
+    report = compare_attempts(iter_jsonl(args.baseline), iter_jsonl(args.candidate))
+    atomic_write_json(args.output, report)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="dsp-data",
-        description="Data-only synthetic generation and optimization loop",
+        description="Data synthesis, optimization, and benchmark diagnosis",
     )
     parser.add_argument(
         "--definitions",
@@ -289,12 +330,43 @@ def build_parser() -> argparse.ArgumentParser:
     mixture_parser.add_argument("--responses")
     mixture_parser.add_argument("--output", required=True)
     mixture_parser.set_defaults(handler=command_optimize_mixture)
+
+    benchmark_run = subparsers.add_parser(
+        "benchmark-run", help="attribute errors in scored benchmark attempts"
+    )
+    benchmark_run.add_argument("--input", required=True)
+    benchmark_run.add_argument("--output", required=True)
+    judge = benchmark_run.add_mutually_exclusive_group()
+    judge.add_argument("--judge-responses")
+    judge.add_argument("--judge-online", action="store_true")
+    benchmark_run.set_defaults(handler=command_benchmark_run)
+
+    benchmark_stats = subparsers.add_parser(
+        "benchmark-stats", help="summarize benchmark results and step labels"
+    )
+    benchmark_stats.add_argument("--results", required=True)
+    benchmark_stats.add_argument("--output", required=True)
+    benchmark_stats.add_argument("--k", type=int, default=1)
+    benchmark_stats.add_argument("--slice")
+    benchmark_stats.set_defaults(handler=command_benchmark_stats)
+    benchmark_compare = subparsers.add_parser(
+        "benchmark-compare", help="compare correctness on matched, scored attempts"
+    )
+    benchmark_compare.add_argument("--baseline", required=True)
+    benchmark_compare.add_argument("--candidate", required=True)
+    benchmark_compare.add_argument("--output", required=True)
+    benchmark_compare.set_defaults(handler=command_benchmark_compare)
     return parser
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command.startswith("benchmark-"):
+        try:
+            return int(args.handler(args))
+        except (KeyError, OSError, ValueError) as exc:
+            parser.error(str(exc))
     return int(args.handler(args))
 
 

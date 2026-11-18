@@ -52,6 +52,16 @@ def write_jsonl(
             stream.write("\n")
 
 
+def atomic_write_jsonl(file_path: PathLike, rows: Iterable[Dict[str, Any]]) -> None:
+    """Publish a complete JSONL artifact after consuming all rows."""
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=f".{path.name}.", dir=path.parent) as temporary:
+        pending = Path(temporary) / path.name
+        write_jsonl(pending, rows)
+        os.replace(pending, path)
+
+
 def atomic_write_json(file_path: PathLike, value: Any) -> None:
     """Atomically replace a JSON artifact in the target directory."""
 
