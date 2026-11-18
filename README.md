@@ -313,3 +313,24 @@ The methodology is intended to **make existing data-curation pipelines more audi
 ## Authors
 
 Zhixuan Li\*, Jiangan Yuan\*, Han Xu (Baidu Inc.)  *\*Co-first authors with equal contributions.*
+
+## Runnable evaluation loop and workbench
+
+The repository now includes an offline, per-question evaluation MVP alongside the existing data-quality loop. It records `EvaluationResult`, annotated `first_error` / `primary_error`, repeated-attempt accuracy and matched baseline-to-candidate transitions.
+
+```sh
+python -m pip install '.[eval]'
+python -m data_synthetic_pipeline run-loop --input fixtures/eval-smoke.jsonl --baseline base --target candidate --output artifacts/eval-smoke
+python -m unittest discover -s tests -v
+```
+
+The synthetic fixture yields 8 results and 4 matched pairs, one in each correctness transition. This is an interface smoke test, not a real benchmark score. The scorer currently supports stripped exact match only; error labels require explicit external annotations.
+
+See [implementation and limits](docs/EVALUATION_LOOP_IMPLEMENTATION_zh.md) and the [interactive workbench source](workbench/README.md). To serve the buildless workbench locally:
+
+```sh
+python scripts/build_workbench_bundle.py
+python -m http.server 8080 --directory workbench
+```
+
+The workbench retains the historical `e0bf620` snapshot for comparison. It does not automatically fetch current GitHub files or execute uploaded Python/Shell. Existing data-task commands remain usable without the optional evaluation dependency.
