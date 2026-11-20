@@ -1,0 +1,74 @@
+name: Open PR as bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      head:
+        description: Existing codex/ branch in this repository
+        required: true
+        type: string
+      title:
+        description: Pull request title
+        required: true
+        type: string
+      body:
+        description: Pull request description
+        required: false
+        type: string
+
+# The Actions token has no repository privileges. The app token below only
+# receives pull request access to this repository.
+permissions: {}
+
+concurrency:
+  group: open-pr-as-bot-${{ inputs.head }}
+  cancel-in-progress: false
+
+jobs:
+  open-pr:
+    if: github.repository == 'Ben3892/data_evaluation_loop' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: pr-bot
+    steps:
+      - name: Create the app installation token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.PR_BOT_APP_ID }}
+          private-key: ${{ secrets.PR_BOT_PRIVATE_KEY }}
+          permission-pull-requests: write
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_HEAD: ${{ inputs.head }}
+          PR_TITLE: ${{ inputs.title }}
+          PR_BODY: ${{ inputs.body }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$PR_HEAD" != codex/* ]] || ! git check-ref-format "refs/heads/$PR_HEAD"; then
+            echo "Expected an existing codex/ branch." >&2
+            exit 1
+          fi
+
+          endpoint="repos/$GITHUB_REPOSITORY/pulls"
+          expected_author='ben3892-eval-pr-bot[bot]'
+          existing=$(gh api --method GET "$endpoint" \
+            -f state=open -f base=main -f "head=$GITHUB_REPOSITORY_OWNER:$PR_HEAD" \
+            --jq 'first(.[]) | [.html_url, .user.login] | @tsv')
+          if [[ -n "$existing" ]]; then
+            IFS=$'\t' read -r url author <<< "$existing"
+          else
+            result=$(gh api --method POST "$endpoint" \
+              -f base=main -f "head=$PR_HEAD" -f "title=$PR_TITLE" -f "body=$PR_BODY" \
+              --jq '[.html_url, .user.login] | @tsv')
+            IFS=$'\t' read -r url author <<< "$result"
+          fi
+
+          if [[ "$author" != "$expected_author" ]]; then
+            echo "Expected PR author $expected_author, found $author." >&2
+            exit 1
+          fi
+          printf 'Pull request: %s\n' "$url" >> "$GITHUB_STEP_SUMMARY"
