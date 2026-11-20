@@ -1,0 +1,9 @@
+{
+  "task_id": "aime_integer.v1",
+  "version": "1.0",
+  "benchmark": "AIME",
+  "scorer": "aime_integer",
+  "normalization": "aime_final_answer.v1",
+  "input_contract": ["run_id", "sample_id", "attempt_id", "model", "protocol", "answer", "reference"],
+  "domains": ["math"]
+}

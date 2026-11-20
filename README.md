@@ -324,7 +324,7 @@ python -m data_synthetic_pipeline run-loop --input fixtures/eval-smoke.jsonl --b
 python -m unittest discover -s tests -v
 ```
 
-The synthetic fixture yields 8 results and 4 matched pairs, one in each correctness transition. This is an interface smoke test, not a real benchmark score. The scorer currently supports stripped exact match only; error labels require explicit external annotations.
+The default stripped exact-match fixture yields 8 results and 4 matched pairs, one in each correctness transition. A separate [AIME integer scorer](docs/AIME_INTEGRATION_zh.md) scores imported final answers and optionally reports pass@k. Process error labels come from external annotations.
 
 See [implementation and limits](docs/EVALUATION_LOOP_IMPLEMENTATION_zh.md) and the [interactive workbench source](workbench/README.md). To serve the buildless workbench locally:
 
