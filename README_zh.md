@@ -4,7 +4,7 @@
 
 闭环对象是版本化的数据任务定义：数学知识点合成、风格/多样性/语言改写、类 KodCode 代码任务生成、确定性检查、小模型打标、大模型 Judge、数据内在评估，以及由大模型提出的 Prompt 或生成任务采样比例候选。
 
-详细设计见 [CLOSED_LOOP_IMPLEMENTATION_DESIGN_zh.md](docs/CLOSED_LOOP_IMPLEMENTATION_DESIGN_zh.md)。
+安装、论文实验对照组、可运行示例和预期产物见[论文实验指南](docs/PAPER_EXPERIMENTS_zh.md)。详细设计见 [CLOSED_LOOP_IMPLEMENTATION_DESIGN_zh.md](docs/CLOSED_LOOP_IMPLEMENTATION_DESIGN_zh.md)。
 
 ## 当前已实现
 
@@ -24,6 +24,7 @@ Python 3.9+ 即可运行核心代码，无必装第三方依赖。
 
 ~~~bash
 python3 -m data_synthetic_pipeline list-tasks
+python3 -m pip install '.[eval]'
 python3 -m unittest discover -s tests -v
 ~~~
 
