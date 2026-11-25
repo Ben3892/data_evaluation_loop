@@ -9,6 +9,7 @@ from data_synthetic_pipeline.eval_loop import (
     ASSETS,
     ROOT,
     evaluate,
+    extract_aime_terminal_box,
     read_jsonl,
     score_aime_integer,
     summarize,
@@ -17,6 +18,30 @@ from data_synthetic_pipeline.eval_loop import (
 
 
 class AimeScorerTests(unittest.TestCase):
+    def test_raw_response_terminal_box_contract(self):
+        cases = {
+            '': '',
+            'intermediate: 60\nno final answer': '',
+            r'\boxed{60} or \boxed{61}': '',
+            r'\boxed{60} is only an intermediate value': '',
+            '\\boxed{60}\nNew calculation: 61': '',
+            'use 24 and 40\nTherefore, \\(\\boxed{060}\\).\n</think>': '060',
+            'first \\boxed{59}\n</think>\n\\boxed{060}': '060',
+            r'\boxed{1000}': '1000',
+        }
+        for raw, expected in cases.items():
+            with self.subTest(raw=raw):
+                self.assertEqual(extract_aime_terminal_box(raw), expected)
+        with self.assertRaisesRegex(ValueError, 'invalid_aime_response_type'):
+            extract_aime_terminal_box(None)
+
+    def test_python_task_id_selects_scorer(self):
+        row = next(read_jsonl(ROOT / 'fixtures/aime-smoke.jsonl'))
+        self.assertTrue(evaluate(row, 'aime_integer.v1')['correct'])
+        self.assertFalse(evaluate(row)['correct'])
+        custom = evaluate(row, 'custom', scorer=score_aime_integer)
+        self.assertTrue(custom['correct'])
+
     def test_integer_and_latex_forms(self):
         for answer, reference, expected in [
             ('60', '060', '060'),
@@ -92,9 +117,10 @@ class PassAtKTests(unittest.TestCase):
         for index, field, value in [(1, 'model', 'different'), (4, 'reference', '061')]:
             rows = list(self.rows)
             rows[index] = {**rows[index], field: value}
-            with self.subTest(field=field):
-                with self.assertRaisesRegex(ValueError, f'pass_at_k_{field}_mismatch'):
-                    summarize(rows, pass_at_ks=(1,))
+            for ks in [(), (1,)]:
+                with self.subTest(field=field, ks=ks):
+                    with self.assertRaisesRegex(ValueError, f'{field}_mismatch'):
+                        summarize(rows, pass_at_ks=ks)
 
     def test_invalid_k_and_legacy_output(self):
         for k in (0, -1, True, 1.5):

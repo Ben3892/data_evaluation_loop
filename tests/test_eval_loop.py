@@ -38,7 +38,7 @@ class EvaluationLoopTests(unittest.TestCase):
         self.assertEqual(summarize(self.rows[1:]+[row],'base','candidate')['paired'],3)
     def test_mismatched_references_rejected(self):
         rows=copy.deepcopy(self.rows); rows[1]['reference']='43'
-        with self.assertRaisesRegex(ValueError,'paired_reference_mismatch'): summarize(rows,'base','candidate')
+        with self.assertRaisesRegex(ValueError,'reference_mismatch'): summarize(rows,'base','candidate')
     def test_unreviewed_has_no_error_claim(self):
         row=copy.deepcopy(self.rows[3]); row['annotation_status']='unreviewed'
         with self.assertRaisesRegex(ValueError,'unreviewed'): validate_result(row)

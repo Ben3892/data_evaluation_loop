@@ -11,6 +11,19 @@ ASSETS = Path(__file__).resolve().parent / 'eval_assets'
 SCHEMA = ASSETS / 'evaluation-result.schema.json'
 AIME_INTEGER = re.compile(r'[0-9]{1,3}')
 AIME_BOXED = re.compile(r'\\boxed\{\s*([0-9]{1,3})\s*\}')
+# The public AIME24 replay uses a terminal boxed integer, sometimes before </think>.
+TERMINAL_BOX = re.compile(r'\\boxed\{\s*([0-9]+)\s*\}(?:\s*(?:\\\)|\\\]|\$|[.。]))*\s*$')
+
+
+def extract_aime_terminal_box(response):
+    if not isinstance(response, str):
+        raise ValueError('invalid_aime_response_type: expected a string')
+    text = response.rstrip().removesuffix('</think>').rstrip()
+    last_line = text.rsplit('\n', 1)[-1]
+    if last_line.count(r'\boxed') != 1:
+        return ''
+    match = TERMINAL_BOX.search(last_line)
+    return match[1] if match else ''
 
 
 def score_exact_match(answer, reference):
@@ -74,7 +87,9 @@ def validate_result(row, schema=None):
     return row
 
 
-def evaluate(row, task_id='atomic_exact.v1', *, scorer=score_exact_match):
+def evaluate(row, task_id='atomic_exact.v1', *, scorer=None):
+    if scorer is None:
+        scorer = score_aime_integer if task_id == 'aime_integer.v1' else score_exact_match
     result = {k: row[k] for k in ('run_id','sample_id','attempt_id','model','protocol','answer','reference')}
     correct, reference = scorer(result['answer'], result['reference'])
     steps = row.get('steps', [])
@@ -135,13 +150,12 @@ def summarize(rows, baseline=None, target=None, *, pass_at_ks=()):
         if key in seen:
             raise ValueError(f'duplicate_result_key:{key}')
         seen.add(key)
-        if ks:
-            run_key = (row['run_id'], row['task_id'], row['protocol'])
-            if models.setdefault(run_key, row['model']) != row['model']:
-                raise ValueError(f'pass_at_k_model_mismatch:{run_key}')
-            question_key = (row['task_id'], row['sample_id'])
-            if references.setdefault(question_key, row['reference']) != row['reference']:
-                raise ValueError(f'pass_at_k_reference_mismatch:{question_key}')
+        run_key = (row['run_id'], row['task_id'], row['protocol'])
+        if models.setdefault(run_key, row['model']) != row['model']:
+            raise ValueError(f'model_mismatch:{run_key}')
+        question_key = (row['task_id'], row['sample_id'])
+        if references.setdefault(question_key, row['reference']) != row['reference']:
+            raise ValueError(f'reference_mismatch:{question_key}')
         groups[(row['run_id'], row['task_id'], row['sample_id'], row['protocol'])].append(row)
     per_question = [{'run_id': k[0], 'task_id': k[1], 'sample_id': k[2], 'protocol': k[3], 'n': len(v), 'correct': sum(r['correct'] for r in v), 'accuracy': sum(r['correct'] for r in v)/len(v)} for k,v in sorted(groups.items())]
     matrix = Counter({'correct→correct': 0, 'correct→incorrect': 0, 'incorrect→correct': 0, 'incorrect→incorrect': 0})
@@ -153,8 +167,6 @@ def summarize(rows, baseline=None, target=None, *, pass_at_ks=()):
             return {(r['task_id'],r['sample_id'],r['attempt_id'],r['protocol']):r for r in rows if r['run_id'] == run}
         a,b = index(baseline),index(target)
         for key in a.keys() & b.keys():
-            if a[key]['reference'] != b[key]['reference']:
-                raise ValueError('paired_reference_mismatch')
             matrix[f"{'correct' if a[key]['correct'] else 'incorrect'}→{'correct' if b[key]['correct'] else 'incorrect'}"] += 1
         unmatched = len(a.keys() ^ b.keys())
         if not sum(matrix.values()):
@@ -170,7 +182,15 @@ def _command_run_loop(args):
     scorer = SCORERS.get((task.get('scorer'), task.get('normalization')))
     if scorer is None:
         raise ValueError('unsupported_atomic_task_contract')
-    rows = [evaluate(r, task['task_id'], scorer=scorer) for r in read_jsonl(args.input)]
+    if args.aime_raw_response and scorer is not score_aime_integer:
+        raise ValueError('aime_raw_response_requires_aime_scorer')
+    rows = []
+    for row in read_jsonl(args.input):
+        if args.aime_raw_response:
+            if 'answer' in row:
+                raise ValueError('aime_raw_response_conflicts_with_answer')
+            row['answer'] = extract_aime_terminal_box(row['response'])
+        rows.append(evaluate(row, task['task_id'], scorer=scorer))
     summary = summarize(rows, args.baseline, args.target, pass_at_ks=args.pass_at_k)
     out = Path(args.output); out.mkdir(parents=True,exist_ok=True)
     (out/'results.jsonl').write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in rows), encoding='utf-8')
@@ -193,6 +213,8 @@ def register(subparsers):
     p.add_argument('--task',default=str(ASSETS/'atomic-exact.v1.json'))
     p.add_argument('--output',default='artifacts/eval-smoke')
     p.add_argument('--baseline'); p.add_argument('--target')
+    p.add_argument('--aime-raw-response', action='store_true',
+                   help='Extract a terminal boxed integer from the response field (AIME only)')
     p.add_argument('--pass-at-k', nargs='+', type=int, default=(), metavar='K',
                    help='Report pass@k for the requested positive values of k')
     p.set_defaults(handler=command_run_loop)

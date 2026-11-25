@@ -15,7 +15,7 @@
 | `first_error` | 结果侧从最早的已确认错误派生。此前可以有 `unknown` 步骤，此时只定位到「最早已确认」。 |
 | `primary_error` | 外部标注可提供 `{step_id, type, evidence}`，三项须与某个 `incorrect` 步骤精确一致。证据不足时用 `null`；已确认的主因可以出现在首错之后。 |
 
-评分只使用答案字段，错误归因只使用显式标注。答对的尝试也可能有已确认的过程错误，答错且未审核的尝试两个错误字段均为 `null`。保存真实运行时，将完整响应、提取器版本、题库版本、模型 checkpoint、prompt、解码配置和 seed 保存在上游运行清单，并用结果键关联。实际回放需要上游先划定最终答案字段，再运行本仓库的适配器。
+评分只使用答案字段，错误归因只使用显式标注。答对的尝试也可能有已确认的过程错误，答错且未审核的尝试两个错误字段均为 `null`。保存真实运行时，将完整响应、提取器版本、题库版本、模型 checkpoint、prompt、解码配置和 seed 保存在上游运行清单，并用结果键关联。默认入口接受上游划定的最终答案；文末的公开回放演示如何直接从采用末尾盒装协议的响应提取答案。
 
 ## 重复作答与 pass@k
 
@@ -47,3 +47,39 @@ python -m unittest discover -v
 预期输出 7 条结果、3 个配对、1 个未配对。迁移为 2 个正确→错误、1 个错误→正确。候选 run 的 attempt 0 在步骤 1 记录首错、步骤 2 记录主因。测试覆盖规范化、无效参考、归因与正确性独立、题级宏平均、覆盖不足、协议隔离和旧输出兼容性。
 
 `EvaluationResult` v1 可继续用于工作台校验。AIME 判分与 pass@k 通过 Python CLI 执行，浏览器 smoke 使用原 exact-match 入口。完整榜单复现需要冻结完整题表、提示词、最终答案提取协议与采样记录。
+
+## 回放 2024 AIME 的真实模型响应
+
+公开回放选取 2024 AIME I 第 2 题和 II 第 6 题。两道题的金标分别为 `025` 和 `055`。两个模型各取上游采样槽位 0–2，总共 12 条完整响应。两题特意覆盖重复作答有对有错的情况，表中数值仅用于回归验收。[公开响应与运行配置](https://github.com/AlbertZhaoCA/iclr27/tree/89205d788e0bb1394218e711399463af50dc8951/runs) · [I 第 2 题](https://artofproblemsolving.com/wiki/index.php/2024_AIME_I_Problems/Problem_2) · [II 第 6 题](https://artofproblemsolving.com/wiki/index.php/2024_AIME_II_Problems/Problem_6)
+
+`fixtures/aime24-public-replay.json` 固定上游版本、六个文件的 SHA-256、题号、逐次读出的最终数字及一条过程标注。测试使用上游完整 `response`，逐条对照 fixture，同时验证配对、迁移和题级宏平均。完整响应、生成 seed 和 checkpoint 信息可按上游文件和 `example_id` 回查。
+
+| 模型组 | I 第 2 题的三次输出 | II 第 6 题的三次输出 | 宏平均 pass@1 | 宏平均 pass@2 |
+|---|---|---|---:|---:|
+| base（qwenbase） | 25、25、125 | 64、55、1535 | 1/2 | 5/6 |
+| candidate（ours） | 25、25、25 | 77、65、66 | 1/2 | 1/2 |
+
+验收值为 12 条结果、4 个题级分组、6 个配对和 0 个未配对。对→对、对→错、错→对、错→错依次为 2、1、1、2。两组 pass@32 的合格题数均为 0。base 在 I 第 2 题的 attempt 2 将代入式指数的分母从 `2y` 换为 `2x`，fixture 将该步骤标作首错和主因。其余作答保留 `unreviewed`。
+
+在仓库根目录用 Bash 执行。首次下载约 0.6 MB，已有这六个文件时可直接设置 `AIME_REPLAY_SOURCE` 到包含 `runs/` 的目录，离线执行最后一行。
+
+```bash
+python -m pip install '.[eval]'
+export AIME_REPLAY_SOURCE="$(mktemp -d)"
+rev=89205d788e0bb1394218e711399463af50dc8951
+for dir in runs/base/predictions/qwenbase runs/ours/qwen25_7b/predictions/ours; do
+  mkdir -p "$AIME_REPLAY_SOURCE/$dir"
+  for slot in 000 001 002; do
+    file="$dir/run_${slot}_AIME24.jsonl"
+    curl -fsSL --retry 2 "https://raw.githubusercontent.com/AlbertZhaoCA/iclr27/$rev/$file" \
+      -o "$AIME_REPLAY_SOURCE/$file" || exit 1
+  done
+done
+python -m unittest discover -s tests -v
+```
+
+### 自有 rollout 的输入约定
+
+用 `run-loop --aime-raw-response` 搭配 AIME task。每行用字符串 `response` 替换 `answer`，其余键与原 fixture 一致。此提取协议检查最后一条非空行，可移除末尾的 `</think>`，接受该行唯一且位于结尾的整数 `\boxed{...}`（可跟数学闭合符或句点）。尾部标签前的最终盒装答案也会被采纳。无法按协议定位时返回空串，照常计入尝试数；盒内四位数字照录并由 scorer 判错。已提供上游最终答案的日志继续使用原 `answer` 模式。保留原始日志以便根据结果键查看提取前的完整响应。
+
+Python 入口 `evaluate(row, 'aime_integer.v1')` 自动选择整数 scorer。传入 `scorer=` 仍可显式指定评分函数。运行 `summarize` 时，无论是否请求 pass@k，同一 run/task/protocol 内混用模型或同一 task/sample 出现金标冲突都会报错，消息分别含 `model_mismatch`、`reference_mismatch`。
