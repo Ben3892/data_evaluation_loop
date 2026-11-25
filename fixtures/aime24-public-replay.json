@@ -1,0 +1,67 @@
+{
+  "source_revision": "89205d788e0bb1394218e711399463af50dc8951",
+  "runs": {
+    "base": {
+      "directory": "runs/base/predictions/qwenbase",
+      "sha256": [
+        "da831c30eecd087fb943e4b2923bed743ee516952ec910267d99f65a700d2cf3",
+        "ec86a9b8f4ff99763cbf4c436cf7fd51125a8e4d993d0b2286f9f640ee395274",
+        "5fea2299a1cce43c9a7ba68b042ff372d030efa3e5d38b5678e8eb309fad91c3"
+      ]
+    },
+    "candidate": {
+      "directory": "runs/ours/qwen25_7b/predictions/ours",
+      "sha256": [
+        "013c9b53464dc25f084b128e70450d9e4d7c8b55994c81ee939efccffa2a47d5",
+        "82277e97a5a376cc7f681ef9dd361e7a6f90dad136f3bb6767b268c9e46208cf",
+        "7cf89b75820c6b8180ed4a9f19b15067e3abfd0fee4198621a4ab9aba7e11051"
+      ]
+    }
+  },
+  "questions": {
+    "AIME24:67": {
+      "sample_id": "aime/2024/I/p02",
+      "reference": "025",
+      "answers": {
+        "base": [
+          "25",
+          "25",
+          "125"
+        ],
+        "candidate": [
+          "25",
+          "25",
+          "25"
+        ]
+      }
+    },
+    "AIME24:86": {
+      "sample_id": "aime/2024/II/p06",
+      "reference": "055",
+      "answers": {
+        "base": [
+          "64",
+          "55",
+          "1535"
+        ],
+        "candidate": [
+          "77",
+          "65",
+          "66"
+        ]
+      }
+    }
+  },
+  "review": {
+    "run_id": "base",
+    "sample_id": "aime/2024/I/p02",
+    "attempt_id": 2,
+    "step": {
+      "step_id": 1,
+      "action": "substitution",
+      "validity": "incorrect",
+      "error_type": "variable_substitution_error",
+      "evidence": "When substituting y into x = y^(5/(2y)), the exponent changes from 5/(2y) to 5/(2x) without justification."
+    }
+  }
+}
