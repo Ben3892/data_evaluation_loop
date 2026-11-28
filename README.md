@@ -2,7 +2,7 @@
 
 > A framework that turns noisy benchmark observations into actionable training-data interventions through structured capability diagnoses, with two end-to-end case studies on a continued-pretraining pipeline.
 
-[📄 paper（PDF）](./Data_and_Evaluation_Closed-Loop_for_Model_Capability_Enhancement.pdf) · [arXiv](https://arxiv.org/abs/2606.28471) · [citation](#citation)
+[📄 paper（PDF）](./Data_and_Evaluation_Closed_Loop.pdf) · [arXiv](https://arxiv.org/abs/2606.28471) · [citation](#citation) · [Run the paper experiments (中文)](docs/PAPER_EXPERIMENTS_zh.md)
 
 [![Paper](https://img.shields.io/badge/arXiv-preprint-b31b1b.svg)](#) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](#)
 
@@ -233,7 +233,7 @@ where ω(F) = log(1 + n(F)) · √(n(F) / (n(F) + κ)) is a support-reliability 
 - Top-M operation pairs by `Weak(F)`.
 - Triples filtered by support (n ≥ 30) and non-additivity (A_comp > 0), top-K retained.
 
-**Matching and sampling.** Each synthetic instruction example s is matched to features via its solving-operation labels; its sampling weight is `w_s = max_{F ∈ Hits(s)} Weak(F)`. The matched pool is sampled via **Efraimidis–Spirakis weighted reservoir sampling without replacement** with per-slot exponential-race keys `k_s = −log(u) / w_s`, under a duplication cap `d_max = 2`. A small fraction ρ of the budget is reserved for uniform sampling from the unmatched pool to preserve distributional coverage.
+**Matching and sampling.** Each synthetic instruction example s is matched to features via its solving-operation labels; its weight is the largest weakness score among its highest-order matches. The matched pool is sampled via **Efraimidis–Spirakis weighted reservoir sampling without replacement** with per-slot exponential-race keys `k_s = −log(u) / w_s`, under a duplication cap `d_max = 2`. The paper uses ρ = 1.0 for matched slots. Uniform sampling from the unmatched pool fills any remaining capacity.
 
 ### 6.3 Results
 
